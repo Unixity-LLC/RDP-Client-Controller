@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 from dotenv import load_dotenv
 from pathlib import Path
+import socket
 import platform
 import time
 
@@ -67,20 +68,52 @@ def connect_rdp(root):
         show_error(f"Error launching RDP:\n{str(e)}")
 
 # GUI Setup
+def get_local_ip():
+    """Get the local IP address of the Raspberry Pi."""
+    try:
+        # Create a dummy socket to determine the IP
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))  # Google DNS (does not send actual data)
+        local_ip = s.getsockname()[0]  # Get local IP address
+        s.close()
+        return local_ip
+    except Exception:
+        return "127.0.0.1"
+
 def launch_gui():
     """Creates and launches the Tkinter GUI."""
     root = tk.Tk()
-    root.title("Raspberry Pi RDP Connector")
+    root.title("Connection Client")
     root.geometry("300x200")
 
-    label = tk.Label(root, text="Press 'Connect' or Enter to start RDP", font=("Arial", 12))
+    # ✅ Disable Close (X) Button → Reboots the system
+    root.protocol("WM_DELETE_WINDOW", handle_close)
+
+    # ✅ Disable Minimize & Maximize Buttons
+    root.attributes("-alpha", True)  # Removes minimize/maximize buttons
+    root.attributes("-topmost", True)  # Keeps the window always on top
+
+    # ✅ Prevent Resizing
+    root.resizable(False, False)
+
+    label = tk.Label(root, text=f"Welcome, {USERNAME}", font=("Arial", 12))
     label.pack(pady=20)
 
     connect_button = tk.Button(root, text="Connect", command=lambda: connect_rdp(root), font=("Arial", 14))
     connect_button.pack(pady=10)
 
+    # ✅ Display device's LOCAL IP at the bottom in small text
+    local_ip = get_local_ip()
+    ip_label = tk.Label(root, text=f"Device: {local_ip}", font=("Arial", 8), fg="gray")
+    ip_label.pack(side="bottom", pady=5)
+
     root.bind("<Return>", lambda event: connect_rdp(root))
     root.mainloop()
+
+def handle_close():
+    """Handles attempts to close the application."""
+    print("User attempted to close the application! Restarting system...")
+    subprocess.run(["sudo", "reboot"])  # Force restart the system
 
 # Main Execution
 if __name__ == "__main__":
