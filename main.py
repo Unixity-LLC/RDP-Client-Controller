@@ -43,16 +43,25 @@ def show_error(message):
 
 # Function to initiate RDP connection
 def connect_rdp():
+    global root
+
     if not USERNAME or not PASSWORD or not HOSTNAME:
         show_error("Missing USERNAME, PASSWORD, or HOSTNAME in user.config.env")
         return
 
-    rdp_command = f"xfreerdp /u:{USERNAME} /p:{PASSWORD} /v:{HOSTNAME} /f /multimon"
+    rdp_command = f"DISPLAY=:0 xfreerdp /u:{USERNAME} /p:{PASSWORD} /v:{HOSTNAME} /f /multimon"
 
     print(f"Running command: {rdp_command}")  # Debugging output
 
     try:
+        # Destroy the Tkinter window before launching RDP
+        root.destroy()
+        print("Tkinter window destroyed.")  # Debugging
+
+        # Run xfreerdp in a separate process
         process = subprocess.Popen(rdp_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print("RDP process started.")  # Debugging
+
         stdout, stderr = process.communicate()
 
         stdout_output = stdout.decode().strip()
@@ -66,7 +75,6 @@ def connect_rdp():
 
     except Exception as e:
         show_error(f"Error launching RDP:\n{str(e)}")
-
 
 # GUI Setup
 def launch_gui():
