@@ -49,10 +49,23 @@ def connect_rdp():
 
     rdp_command = f"xfreerdp /u:{USERNAME} /p:{PASSWORD} /v:{HOSTNAME} /f /multimon"
 
+    print(f"Running command: {rdp_command}")  # Debugging output
+
     try:
-        subprocess.Popen(rdp_command, shell=True)
+        process = subprocess.Popen(rdp_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+
+        stdout_output = stdout.decode().strip()
+        stderr_output = stderr.decode().strip()
+
+        print("STDOUT:", stdout_output)
+        print("STDERR:", stderr_output)
+
+        if stderr_output:
+            show_error(f"RDP Connection Error:\n{stderr_output}")
+
     except Exception as e:
-        show_error(f"Error launching RDP: {e}")
+        show_error(f"Error launching RDP:\n{str(e)}")
 
 
 # GUI Setup
