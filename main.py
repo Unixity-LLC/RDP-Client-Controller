@@ -5,6 +5,7 @@ from tkinter import messagebox
 from dotenv import load_dotenv
 from pathlib import Path
 import platform
+import time
 
 # Load environment variables from user.config.env
 env_path = Path(__file__).parent / "user.config.env"
@@ -18,6 +19,7 @@ print("Loaded ENV Variables:")
 print(f"USERNAME: {USERNAME}")
 print(f"PASSWORD: {PASSWORD}")
 print(f"HOSTNAME: {HOSTNAME}")
+
 
 # Function to check OS and xfreerdp installation
 def check_system():
@@ -41,31 +43,39 @@ def show_error(message):
     exit(1)
 
 
-# Function to initiate RDP connection
 def connect_rdp():
+    global root
+
     if not USERNAME or not PASSWORD or not HOSTNAME:
         show_error("Missing USERNAME, PASSWORD, or HOSTNAME in user.config.env")
         return
 
-    rdp_command = f"xfreerdp /u:{USERNAME} /p:{PASSWORD} /v:{HOSTNAME} /f /multimon /cert-ignore"
+    rdp_command = f"xfreerdp /u:{USERNAME} /p:{PASSWORD} /v:{HOSTNAME} /w:1920 /h:1080 /f /multimon /cert-ignore"
 
-    print(f"Running command: {rdp_command}")  # Debugging output
+    print(f"Running command: {rdp_command}")
 
     try:
-        process = subprocess.Popen(rdp_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = process.communicate()
+        # Destroy the Tkinter window before launching RDP
+        root.destroy()
+        print("Tkinter window destroyed.")
 
-        stdout_output = stdout.decode().strip()
-        stderr_output = stderr.decode().strip()
+        # Start RDP session
+        process = subprocess.Popen(rdp_command, shell=True)
+        process.wait()  # Wait for the RDP session to close
 
-        print("STDOUT:", stdout_output)
-        print("STDERR:", stderr_output)
+        print("RDP session ended. Restarting application in 5 seconds...")
+        time.sleep(5)  # Pause before restarting
 
-        if stderr_output:
-            show_error(f"RDP Connection Error:\n{stderr_output}")
+        restart_application()
 
     except Exception as e:
         show_error(f"Error launching RDP:\n{str(e)}")
+
+
+def restart_application():
+    """Restart the Tkinter GUI after RDP disconnects."""
+    print("Restarting GUI...")
+    launch_gui()
 
 
 # GUI Setup
