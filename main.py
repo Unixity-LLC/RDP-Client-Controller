@@ -3,15 +3,21 @@ import subprocess
 import tkinter as tk
 from tkinter import messagebox
 from dotenv import load_dotenv
+from pathlib import Path
 import platform
 
 # Load environment variables from user.config.env
-load_dotenv("user.config.env")
+env_path = Path(__file__).parent / "user.config.env"
+load_dotenv(env_path)
 
 USERNAME = os.getenv("USERNAME", "")
 PASSWORD = os.getenv("PASSWORD", "")
 HOSTNAME = os.getenv("HOSTNAME", "")
 
+print("Loaded ENV Variables:")
+print(f"USERNAME: {USERNAME}")
+print(f"PASSWORD: {PASSWORD}")
+print(f"HOSTNAME: {HOSTNAME}")
 
 # Function to check OS and xfreerdp installation
 def check_system():
