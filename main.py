@@ -47,7 +47,7 @@ def connect_rdp():
         show_error("Missing USERNAME, PASSWORD, or HOSTNAME in user.config.env")
         return
 
-    rdp_command = f"xfreerdp /u:{USERNAME} /p:{PASSWORD} /v:{HOSTNAME} /f /multimon"
+    rdp_command = f"xfreerdp /u:{USERNAME} /p:{PASSWORD} /v:{HOSTNAME} /f /multimon /cert-ignore"
 
     print(f"Running command: {rdp_command}")  # Debugging output
 
